@@ -59,6 +59,8 @@ function combatInit() {
   }
 
   combatRender();
+  // Validação do formulário de adicionar (nome + iniciativa obrigatórios)
+  combatBindAddFormValidation();
   combatEnableDrag();
   combatLogRender();
 }
@@ -87,19 +89,47 @@ function combatLoad() {
   }
 }
 
+
+function combatBindAddFormValidation() {
+  const initEl = document.getElementById("combatNewInit");
+  const nameEl = document.getElementById("combatNewName");
+  const btn = document.getElementById("combatAddBtn");
+  const hint = document.getElementById("combatAddHint");
+  if (!initEl || !nameEl || !btn) return;
+
+  const validate = () => {
+    const nameOk = (nameEl.value || "").trim().length > 0;
+    const initOk = (initEl.value !== "" && initEl.value !== null && initEl.value !== undefined);
+    btn.disabled = !(nameOk && initOk);
+    btn.classList.toggle("is-disabled", btn.disabled);
+    if (hint) hint.classList.toggle("show", btn.disabled);
+  };
+
+  initEl.addEventListener("input", validate);
+  nameEl.addEventListener("input", validate);
+  nameEl.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      validate();
+      if (!btn.disabled) {
+        e.preventDefault();
+        combatAddFromForm();
+      }
+    }
+  });
+
+  validate();
+}
+
 function combatAddFromForm() {
   const init = parseInt(document.getElementById("combatNewInit")?.value) || 0;
   const name = (document.getElementById("combatNewName")?.value || "").trim();
   const hpCur = parseInt(document.getElementById("combatNewHP")?.value) || 0;
-  const hpMaxInp = parseInt(document.getElementById("combatNewHPMax")?.value);
-  const hpMax = Number.isFinite(hpMaxInp) ? hpMaxInp : hpCur;
-
+  const hpMax = hpCur;
   const mpCur = parseInt(document.getElementById("combatNewMP")?.value) || 0;
-  const mpMaxInp = parseInt(document.getElementById("combatNewMPMax")?.value);
-  const mpMax = Number.isFinite(mpMaxInp) ? mpMaxInp : mpCur;
+    const mpMax = mpCur;
 
-  if (!name) {
-    alert("Digite um nome para adicionar.");
+  if (!name || (document.getElementById("combatNewInit")?.value === "")) {
+    alert("Preencha Iniciativa e Nome para adicionar.");
     return;
   }
 
@@ -121,10 +151,9 @@ function combatAddFromForm() {
 
   if (!combatState.activeId) combatState.activeId = id;
 
-  // limpa nome, PV/PM max
+  // limpa nome (PV/PM ficam para facilitar múltiplas adições)
   document.getElementById("combatNewName").value = "";
-  document.getElementById("combatNewHPMax").value = "";
-  document.getElementById("combatNewMPMax").value = "";
+  combatBindAddFormValidation();
 
   combatLogAdd(`+ ${name} (INI ${init})`);
   combatRender();
@@ -356,7 +385,6 @@ function combatDuplicate(id) {
 /** Condições (chips) **/
 
 const CONDITION_INFO = {
-  "": "",
   "Abalado": "O personagem sofre -2 em testes de perícia. Se ficar abalado novamente, em vez disso fica apavorado. (Medo)",
   "Agarrado": "O personagem fica desprevenido e imóvel, sofre -2 em testes de ataque e só pode atacar com armas leves. Ataques à distância contra um alvo envolvido em uma manobra de agarrar têm 50% de chance de acertar o alvo errado. (Movimento)",
   "Alquebrado": "O custo em pontos de mana das habilidades do personagem aumenta em +1. (Mental)",
@@ -393,7 +421,7 @@ const CONDITION_INFO = {
   "Surpreendido": "O personagem fica desprevenido e não pode fazer ações.",
   "Vulnerável": "O personagem sofre -2 na Defesa.",
 };
-const CONDITION_LIST = Object.keys(CONDITION_INFO).sort((a, b) => a.localeCompare(b, "pt-BR"));
+const CONDITION_LIST = Object.keys(CONDITION_INFO).sort((a,b)=>a.localeCompare(b, "pt-BR"));
 
 function combatAddCondition(id) {
   const c = combatFind(id);
@@ -414,6 +442,21 @@ function combatAddCondition(id) {
   combatLogAdd(`${c.name}: + condição "${name}" (${dur}r)`);
   combatRender();
   combatSave();
+}
+
+// Habilita/desabilita os controles de condição conforme seleção ("—" = vazio)
+function combatSyncCondControls(id) {
+  const sel = document.getElementById(`condSel-${id}`);
+  const infoBtn = document.getElementById(`condInfoBtn-${id}`);
+  const addBtn = document.getElementById(`condAddBtn-${id}`);
+  const has = !!(sel && (sel.value || "").trim());
+  if (infoBtn) infoBtn.disabled = !has;
+  if (addBtn) addBtn.disabled = !has;
+  // Se não houver seleção, mantém popover fechado
+  if (!has) {
+    const pop = document.getElementById(`condPop-${id}`);
+    if (pop) pop.classList.add("d-none");
+  }
 }
 
 function combatCondBump(id, idx, delta) {
@@ -448,7 +491,7 @@ function combatTickConditionsOnLeaveCurrentTurn() {
   const cur = combatFind(combatState.activeId);
   if (!cur || !Array.isArray(cur.conditions) || cur.conditions.length === 0) return;
 
-  const before = cur.conditions.map(x => ({ ...x }));
+  const before = cur.conditions.map(x => ({...x}));
   cur.conditions.forEach(x => {
     if (Number.isFinite(parseInt(x.remaining)) && parseInt(x.remaining) > 0) {
       x.remaining = parseInt(x.remaining) - 1;
@@ -600,9 +643,9 @@ function combatImport(input) {
         name: c.name || "—",
         init: parseInt(c.init) || 0,
         hpCur: clampInt(c.hpCur, 0, 999999, 0),
-        hpMax: clampInt(c.hpMax, 0, 999999, clampInt(c.hpCur, 0, 999999, 0)),
+        hpMax: clampInt(c.hpMax, 0, 999999, clampInt(c.hpCur,0,999999,0)),
         mpCur: clampInt(c.mpCur, 0, 999999, 0),
-        mpMax: clampInt(c.mpMax, 0, 999999, clampInt(c.mpCur, 0, 999999, 0)),
+        mpMax: clampInt(c.mpMax, 0, 999999, clampInt(c.mpCur,0,999999,0)),
         notes: c.notes || "",
         conditions: Array.isArray(c.conditions) ? c.conditions.map(x => ({
           name: (x.name || "").toString(),
@@ -612,7 +655,7 @@ function combatImport(input) {
           def: c.stats.def ?? "",
           res: c.stats.res ?? "",
           cd: c.stats.cd ?? ""
-        } : { def: "", res: "", cd: "" },
+        } : { def:"", res:"", cd:"" },
         open: false
       }));
 
@@ -690,6 +733,7 @@ function combatRender() {
     const row = document.getElementById(`combatRow-${c.id}`);
     if (!row) return;
     row.classList.toggle("active-turn", c.id === combatState.activeId);
+    row.classList.toggle("open", !!c.open);
     combatRenderNoteIndicator(c.id);
 
     // Clique numa condição mostra o texto (além do hover via tooltip)
@@ -709,6 +753,12 @@ function combatRender() {
     const sel = document.getElementById(`condSel-${c.id}`);
     if (!sel) return;
     if (sel.options.length === 0) {
+      // Primeira opção vazia: não selecionar nenhuma condição ao abrir/criar
+      const opt0 = document.createElement("option");
+      opt0.value = "";
+      opt0.textContent = "—";
+      sel.appendChild(opt0);
+
       CONDITION_LIST.forEach(n => {
         const opt = document.createElement("option");
         opt.value = n;
@@ -720,10 +770,23 @@ function combatRender() {
     // Mostra o efeito da condição selecionada (e mantém atualizado)
     if (!sel.dataset.bound) {
       sel.dataset.bound = "1";
-      sel.addEventListener("change", () => combatSetCondHelp(c.id, sel.value));
+      sel.addEventListener("change", () => {
+        combatSetCondHelp(c.id, sel.value);
+        combatSyncCondControls(c.id);
+      });
     }
+    combatSyncCondControls(c.id);
     if (sel.value) combatSetCondHelp(c.id, sel.value);
   });
+}
+
+function combatSyncCondControls(id) {
+  const sel = document.getElementById(`condSel-${id}`);
+  const infoBtn = document.getElementById(`condInfoBtn-${id}`);
+  const addBtn = document.getElementById(`condAddBtn-${id}`);
+  const has = !!(sel && (sel.value || "").trim());
+  if (infoBtn) infoBtn.disabled = !has;
+  if (addBtn) addBtn.disabled = !has;
 }
 
 function combatRowHTML(c) {
@@ -737,12 +800,11 @@ function combatRowHTML(c) {
 
   const noteClass = hasNotes ? "has-notes" : "";
   const detailsClass = open ? "" : "d-none";
-  const icon = open ? "bi-chevron-up" : "bi-chevron-down";
 
   const condHTML = (Array.isArray(c.conditions) && c.conditions.length)
     ? `<div class="chip-row mt-2">${c.conditions.map((x, i) => `
         <span class="cond-chip" data-cond="${escapeAttr(x.name)}" title="${escapeAttr(combatCondDesc(x.name))}">
-          ${escapeHtml(x.name)} <span class="n">${clampInt(x.remaining, 0, 999, 1)}r</span>
+          ${escapeHtml(x.name)} <span class="n">${clampInt(x.remaining,0,999,1)}r</span>
           <button title="-1" onclick="combatCondBump('${c.id}',${i},-1); event.stopPropagation();">-</button>
           <button title="+1" onclick="combatCondBump('${c.id}',${i},+1); event.stopPropagation();">+</button>
           <button title="Remover" onclick="combatCondRemove('${c.id}',${i}); event.stopPropagation();">×</button>
@@ -762,7 +824,7 @@ function combatRowHTML(c) {
 
   return `
   <div class="combat-row" id="combatRow-${c.id}" data-id="${c.id}">
-    <div class="row g-1 align-items-center text-center combat-summary" onclick="combatRowClick('${c.id}', event)">
+    <div class="row g-1 align-items-center text-center combat-summary position-relative" onclick="combatRowClick('${c.id}', event)">
       <div class="col-3 col-md-2 d-flex align-items-center justify-content-center gap-2">
         <i class="bi bi-grip-vertical drag-handle" title="Arrastar"></i>
         <input class="combat-init-input" type="number" inputmode="numeric" value="${init}"
@@ -776,7 +838,8 @@ function combatRowHTML(c) {
         <span id="combatNoteIndicator-${c.id}" class="combat-note-indicator ${noteClass}" title="Anotações">📝</span>
       </div>
 
-      <div class="col-3 col-md-4">
+
+      <div class="col-3 col-md-4 d-flex align-items-center justify-content-end gap-2">
         <div class="combat-badges">
           <div class="bar-mini hp" title="PV atual/ máximo">
             <div id="combatHPFill-${c.id}" class="fill" style="width:${hpPct}%"></div>
@@ -787,18 +850,17 @@ function combatRowHTML(c) {
             <div id="combatMPText-${c.id}" class="txt">PM ${mpDisplay}/${mpMax}</div>
           </div>
         </div>
-      </div>
 
-      <div class="col-12 col-md-12 d-flex justify-content-end gap-2 px-2 pb-1">
-        <button class="btn btn-sm btn-outline-secondary" onclick="combatDuplicate('${c.id}'); event.stopPropagation();" title="Copiar/duplicar">
-          <i class="bi bi-files"></i>
-        </button>
-        <button class="btn btn-sm btn-outline-secondary" onclick="combatToggleDetails('${c.id}'); event.stopPropagation();" title="Detalhes">
-          <i class="bi ${icon}"></i>
-        </button>
-        <button class="btn btn-sm btn-outline-danger" onclick="combatRemove('${c.id}'); event.stopPropagation();" title="Remover">
-          <i class="bi bi-trash"></i>
-        </button>
+        <div class="combat-actions-inline" onclick="event.stopPropagation()">
+          <button class="btn btn-sm btn-outline-secondary" onclick="combatDuplicate('${c.id}'); event.stopPropagation();" title="Copiar/duplicar">
+            <i class="bi bi-files"></i>
+          </button>
+          <button class="btn btn-sm btn-outline-danger" onclick="combatRemove('${c.id}'); event.stopPropagation();" title="Remover">
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
+
+        <span class="combat-chev" aria-hidden="true">${open ? "▴" : "▾"}</span>
       </div>
     </div>
 
@@ -806,7 +868,7 @@ function combatRowHTML(c) {
       <div class="row g-2 align-items-end">
         <div class="col-12 col-lg-6">
           <div class="combat-subbox">
-            <div class="d-flex justify-content-between align-items-center mb-1">
+            <div class="d-flex justify-content-between align-items-center mb-2">
               <span class="fw-bold text-danger">PV</span>
               <div class="d-flex gap-1">
                 <button class="btn btn-outline-secondary btn-sm combat-quick-btn" onclick="combatDelta('${c.id}','hpCur',-5); event.stopPropagation();">-5</button>
@@ -815,19 +877,14 @@ function combatRowHTML(c) {
                 <button class="btn btn-outline-secondary btn-sm combat-quick-btn" onclick="combatDelta('${c.id}','hpCur',+5); event.stopPropagation();">+5</button>
               </div>
             </div>
-            <div class="d-flex justify-content-center my-2">
-              <div class="meter hp" title="PV (barra) - não ultrapassa 100%">
-                <div id="combatHPDetailFill-${c.id}" class="fill" style="width:${hpPct}%"></div>
-                <div id="combatHPDetailText-${c.id}" class="txt">PV ${hpDisplay}/${hpMax}</div>
-              </div>
-            </div>
-            <div class="row g-1">
-              <div class="col-6">
+
+            <div class="combat-inline-fields">
+              <div class="field">
                 <label class="t20-label">Atual</label>
                 <input id="combatHPcur-${c.id}" class="form-control t20-input text-center" type="number" inputmode="numeric" value="${hpCur}"
                   oninput="combatUpdateNumber('${c.id}','hpCur',this.value)">
               </div>
-              <div class="col-6">
+              <div class="field">
                 <label class="t20-label">Máx</label>
                 <input id="combatHPmax-${c.id}" class="form-control t20-input text-center" type="number" inputmode="numeric" value="${hpMax}"
                   oninput="combatUpdateNumber('${c.id}','hpMax',this.value)">
@@ -838,7 +895,7 @@ function combatRowHTML(c) {
 
         <div class="col-12 col-lg-6">
           <div class="combat-subbox">
-            <div class="d-flex justify-content-between align-items-center mb-1">
+            <div class="d-flex justify-content-between align-items-center mb-2">
               <span class="fw-bold text-primary">PM</span>
               <div class="d-flex gap-1">
                 <button class="btn btn-outline-secondary btn-sm combat-quick-btn" onclick="combatDelta('${c.id}','mpCur',-5); event.stopPropagation();">-5</button>
@@ -847,53 +904,19 @@ function combatRowHTML(c) {
                 <button class="btn btn-outline-secondary btn-sm combat-quick-btn" onclick="combatDelta('${c.id}','mpCur',+5); event.stopPropagation();">+5</button>
               </div>
             </div>
-            <div class="d-flex justify-content-center my-2">
-              <div class="meter mp" title="PM (barra) - não ultrapassa 100%">
-                <div id="combatMPDetailFill-${c.id}" class="fill" style="width:${mpPct}%"></div>
-                <div id="combatMPDetailText-${c.id}" class="txt">PM ${mpDisplay}/${mpMax}</div>
-              </div>
-            </div>
-            <div class="row g-1">
-              <div class="col-6">
+
+            <div class="combat-inline-fields">
+              <div class="field">
                 <label class="t20-label">Atual</label>
                 <input id="combatMPcur-${c.id}" class="form-control t20-input text-center" type="number" inputmode="numeric" value="${mpCur}"
                   oninput="combatUpdateNumber('${c.id}','mpCur',this.value)">
               </div>
-              <div class="col-6">
+              <div class="field">
                 <label class="t20-label">Máx</label>
                 <input id="combatMPmax-${c.id}" class="form-control t20-input text-center" type="number" inputmode="numeric" value="${mpMax}"
                   oninput="combatUpdateNumber('${c.id}','mpMax',this.value)">
               </div>
             </div>
-          </div>
-        </div>
-
-        <div class="col-12">
-          <div class="combat-subbox">
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
-              <span class="fw-bold">Condições</span>
-              <div class="d-flex gap-2 align-items-center flex-wrap">
-                <select id="condSel-${c.id}" class="form-select form-select-sm inline-mini" onclick="event.stopPropagation()"></select>
-                <input id="condDur-${c.id}" class="form-control form-control-sm inline-mini" type="number" inputmode="numeric" value="1" min="0" max="999"
-                  title="Duração em rodadas"
-                  onclick="event.stopPropagation()">
-                <button class="btn btn-sm btn-outline-secondary" onclick="combatToggleCondInfo('${c.id}'); event.stopPropagation();" title="O que esta condição faz?">
-                  <i class="bi bi-info-circle"></i>
-                </button>
-                                <button class="btn btn-sm btn-outline-dark" onclick="combatAddCondition('${c.id}'); event.stopPropagation();" title="Adicionar condição">
-                  <i class="bi bi-plus-lg"></i>
-                </button>
-              </div>
-            </div>
-            <div class="cond-help small text-muted mt-1" id="condHelp-${c.id}"></div>
-            <div class="cond-popover d-none" id="condPop-${c.id}">
-              <div class="cond-popover-inner">
-                <div class="cond-popover-title">Condição</div>
-                <div class="cond-popover-body" id="condPopBody-${c.id}"></div>
-              </div>
-            </div>
-            ${condHTML}
-            <div class="small-help mt-2">Duração diminui em 1 quando você clica “Próximo” (ou seja: ao sair do turno desta criatura).</div>
           </div>
         </div>
 
@@ -916,6 +939,34 @@ function combatRowHTML(c) {
               </div>
             </div>
           </div>
+
+        <div class="col-12">
+          <div class="combat-subbox">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
+              <span class="fw-bold">Condições</span>
+              <div class="d-flex gap-2 align-items-center flex-wrap">
+                <select id="condSel-${c.id}" class="form-select form-select-sm inline-mini" onclick="event.stopPropagation()"></select>
+                <input id="condDur-${c.id}" class="form-control form-control-sm inline-mini" type="number" inputmode="numeric" value="1" min="0" max="999"
+                  title="Duração em rodadas"
+                  onclick="event.stopPropagation()">
+                <button id="condInfoBtn-${c.id}" class="btn btn-sm btn-outline-secondary" onclick="combatToggleCondInfo('${c.id}'); event.stopPropagation();" title="O que esta condição faz?" disabled>
+                  <i class="bi bi-info-circle"></i>
+                </button>
+                <button id="condAddBtn-${c.id}" class="btn btn-sm btn-outline-dark" onclick="combatAddCondition('${c.id}'); event.stopPropagation();" title="Adicionar condição" disabled>
+                  <i class="bi bi-plus-lg"></i>
+                </button>
+              </div>
+            </div>
+                        <div class="cond-popover d-none" id="condPop-${c.id}">
+              <div class="cond-popover-inner">
+                <div class="cond-popover-title">Condição</div>
+                <div class="cond-popover-body" id="condPopBody-${c.id}"></div>
+              </div>
+            </div>
+            ${condHTML}
+            <div class="small-help mt-2">Duração diminui em 1 quando você clica “Próximo” (ou seja: ao sair do turno desta criatura).</div>
+          </div>
+        </div>
         </div>
 
         <div class="col-12">
@@ -968,15 +1019,19 @@ function combatCondDesc(name) {
 }
 
 function combatSetCondHelp(id, name) {
-  const desc = combatCondDesc(name);
-  const help = document.getElementById(`condHelp-${id}`);
-  if (help) help.textContent = desc || "";
-
+  const nm = (name || "").trim();
+  const desc = nm ? combatCondDesc(nm) : "";
   const pop = document.getElementById(`condPop-${id}`);
   const popBody = document.getElementById(`condPopBody-${id}`);
   const popTitle = pop ? pop.querySelector(".cond-popover-title") : null;
-  if (popTitle) popTitle.textContent = name || "Condição";
-  if (popBody) popBody.textContent = desc || "Selecione uma condição para ver o efeito.";
+  if (!nm) {
+    // Sem seleção: não mostra popover automaticamente
+    if (pop) pop.classList.add("d-none");
+    return;
+  }
+  if (popTitle) popTitle.textContent = nm;
+  if (popBody) popBody.textContent = desc || "";
+  if (pop) pop.classList.remove("d-none");
 }
 
 function combatToggleCondInfo(id) {
@@ -987,6 +1042,10 @@ function combatToggleCondInfo(id) {
   if (willOpen) {
     const sel = document.getElementById(`condSel-${id}`);
     const name = sel ? sel.value : "";
+    if (!String(name || "").trim()) {
+      pop.classList.add("d-none");
+      return;
+    }
     combatSetCondHelp(id, name);
   }
 }
