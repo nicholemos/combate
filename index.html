@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -33,12 +32,10 @@
       </div>
 
       <div class="d-flex flex-wrap align-items-center gap-2">
-        <button class="btn btn-dark btn-sm fw-bold" onclick="combatPrevTurn()"
-          title="Turno anterior (não desfaz duração de condições)">
+        <button class="btn btn-dark btn-sm fw-bold" onclick="combatPrevTurn()" title="Turno anterior (não desfaz duração de condições)">
           <i class="bi bi-chevron-left"></i>
         </button>
-        <button class="btn btn-dark btn-sm fw-bold" onclick="combatNextTurn()"
-          title="Próximo turno (reduz condições ao sair do turno atual)">
+        <button class="btn btn-dark btn-sm fw-bold" onclick="combatNextTurn()" title="Próximo turno (reduz condições ao sair do turno atual)">
           <i class="bi bi-chevron-right"></i>
         </button>
 
@@ -47,16 +44,14 @@
         </button>
 
         <div class="form-check form-switch ms-1 me-1">
-          <input class="form-check-input" type="checkbox" role="switch" id="combatAutoSort"
-            onchange="combatSetAutoSort(this.checked)">
+          <input class="form-check-input" type="checkbox" role="switch" id="combatAutoSort" onchange="combatSetAutoSort(this.checked)">
           <label class="form-check-label small" for="combatAutoSort">Auto-ordenar</label>
         </div>
 
         <button class="btn btn-outline-secondary btn-sm" onclick="combatExport()" title="Baixar combate (.json)">
           <i class="bi bi-download"></i>
         </button>
-        <button class="btn btn-outline-secondary btn-sm" onclick="document.getElementById('combatFileInput').click()"
-          title="Carregar combate (.json)">
+        <button class="btn btn-outline-secondary btn-sm" onclick="document.getElementById('combatFileInput').click()" title="Carregar combate (.json)">
           <i class="bi bi-upload"></i>
         </button>
         <input type="file" id="combatFileInput" style="display:none" accept=".json" onchange="combatImport(this)">
@@ -74,8 +69,7 @@
       <div class="row g-2 align-items-end">
         <div class="col-12 col-md-2">
           <label class="t20-label">Iniciativa</label>
-          <input id="combatNewInit" type="number" inputmode="numeric" class="form-control t20-input text-center fw-bold"
-            placeholder="0">
+          <input id="combatNewInit" type="number" inputmode="numeric" class="form-control t20-input text-center fw-bold" placeholder="0">
         </div>
 
         <div class="col-12 col-md-4">
@@ -83,38 +77,24 @@
           <input id="combatNewName" type="text" class="form-control t20-input fw-bold" placeholder="Ex: Goblin 1">
         </div>
 
-        <div class="col-6 col-md-2">
+        <div class="col-6 col-md-3">
           <label class="t20-label">PV (atual)</label>
-          <input id="combatNewHP" type="number" inputmode="numeric" class="form-control t20-input text-center"
-            placeholder="0">
+          <input id="combatNewHP" type="number" inputmode="numeric" class="form-control t20-input text-center" placeholder="0">
         </div>
-
-        <div class="col-6 col-md-2">
-          <label class="t20-label">PV (máx)</label>
-          <input id="combatNewHPMax" type="number" inputmode="numeric" class="form-control t20-input text-center"
-            placeholder="(igual ao atual)">
-        </div>
-
-        <div class="col-6 col-md-1">
+<div class="col-6 col-md-3">
           <label class="t20-label">PM</label>
-          <input id="combatNewMP" type="number" inputmode="numeric" class="form-control t20-input text-center"
-            placeholder="0">
+          <input id="combatNewMP" type="number" inputmode="numeric" class="form-control t20-input text-center" placeholder="0">
         </div>
-
-        <div class="col-6 col-md-1">
-          <label class="t20-label">PM máx</label>
-          <input id="combatNewMPMax" type="number" inputmode="numeric" class="form-control t20-input text-center"
-            placeholder="(igual ao atual)">
-        </div>
-
-        <div class="col-12 col-md-12 mt-2 d-flex gap-2 justify-content-between align-items-center flex-wrap">
+<div class="col-12 col-md-12 mt-2 d-flex gap-2 justify-content-between align-items-center flex-wrap">
           <div class="text-muted small">
-            Dicas: clique para expandir. Arraste pelo grip para desempate manual. 📝 aparece quando houver anotações.
-            Condições com duração caem ao avançar o turno.
+            Dicas: clique para expandir. Arraste pelo grip para desempate manual. 📝 aparece quando houver anotações. Condições com duração caem ao avançar o turno.
           </div>
-          <button class="btn btn-dark fw-bold btn-add" onclick="combatAddFromForm()" title="Adicionar">
-            <i class="bi bi-plus-lg"></i> Adicionar
-          </button>
+	          <div class="d-flex align-items-center gap-2 flex-wrap justify-content-end">
+	            <span id="combatAddHint" class="combat-add-hint" aria-live="polite">Preencha INI e Nome para adicionar.</span>
+	            <button id="combatAddBtn" class="btn btn-dark fw-bold btn-add" onclick="combatAddFromForm()" title="Adicionar" disabled>
+	              <i class="bi bi-plus-lg"></i> Adicionar
+	            </button>
+	          </div>
         </div>
       </div>
     </div>
@@ -139,8 +119,7 @@
             <i class="bi bi-eraser"></i>
           </button>
         </div>
-        <div class="text-muted small">O log é opcional, mas ajuda muito quando alguém diz “pera, como ele ficou com 2
-          PV?”</div>
+        <div class="text-muted small">O log é opcional, mas ajuda muito quando alguém diz “pera, como ele ficou com 2 PV?”</div>
       </div>
 
       <div id="combatLogWrap" class="mt-2 d-none">
@@ -149,176 +128,7 @@
     </div>
 
   </main>
-  <!-- ASSINATURA / CRÉDITOS (STR-style) -->
-  <section class="sig-wrap" aria-label="Sobre e créditos">
-    <details class="sig-card">
-      <summary class="sig-summary">
-        <div class="sig-summary-left">
-          <span class="sig-badge">Sobre</span>
-          <span class="sig-title">Créditos e outros projetos</span>
-        </div>
-        <div class="sig-summary-right">
-          <span class="sig-hint">clique para abrir</span>
-          <span class="sig-chevron" aria-hidden="true">▾</span>
-        </div>
-      </summary>
-
-      <div class="sig-body">
-        <div class="sig-hero">
-          <h3 class="sig-h3">Quem fez isso?</h3>
-          <p class="sig-p">
-            Olá! Meu nome é <strong>Nicholas Lemos</strong>.
-            Sou jogador de RPG, desenvolvedor de software e entusiasta de ferramentas para <strong>Tormenta20</strong>.
-          </p>
-          <p class="sig-p">
-            Criei este <strong>Gerenciador de Combate</strong> porque senti falta de uma ferramenta
-            <strong>rápida, clara e pensada para a mesa</strong>, especialmente para mestres que lidam com muitos
-            inimigos,
-            condições e rodadas ao mesmo tempo. A ideia é manter tudo <strong>visível, acessível e sem quebrar o
-              ritmo</strong>.
-          </p>
-          <p class="sig-p">
-            Feedbacks, sugestões e ideias são sempre bem-vindos.
-          </p>
-        </div>
-        <div class="sig-col">
-          <h4 class="sig-h4">Contato</h4>
-
-          <a class="sig-link"
-            href="https://api.whatsapp.com/send/?phone=5531992825753&text=Ol%C3%A1%2C+gostaria+de+tirar+uma+d%C3%BAvida.&type=phone_number&app_absent=0"
-            target="_blank" rel="noopener noreferrer">
-            <div class="sig-link-main">
-              <span class="sig-link-name">WhatsApp</span>
-              <span class="sig-link-url">Fale comigo diretamente</span>
-            </div>
-            <span class="sig-ext">↗</span>
-          </a>
-
-          <a class="sig-link" href="https://www.linkedin.com/in/nicholas-lemos/" target="_blank"
-            rel="noopener noreferrer">
-            <div class="sig-link-main">
-              <span class="sig-link-name">LinkedIn</span>
-              <span class="sig-link-url">Perfil profissional</span>
-            </div>
-            <span class="sig-ext">↗</span>
-          </a>
-
-          <a class="sig-link" href="https://github.com/nicholemos" target="_blank" rel="noopener noreferrer">
-            <div class="sig-link-main">
-              <span class="sig-link-name">GitHub</span>
-              <span class="sig-link-url">Repositórios e projetos</span>
-            </div>
-            <span class="sig-ext">↗</span>
-          </a>
-
-          <div class="sig-note sig-cta">
-            <div class="sig-note-title">Que tal um site para você?</div>
-            <div class="sig-note-text">
-              Dê uma olhada no modelo de site e me chame para conversarmos.
-              <br>
-              <a href="https://nicholemos.github.io/" target="_blank" rel="noopener noreferrer">
-                https://nicholemos.github.io/
-              </a>
-            </div>
-          </div>
-        </div>
-        <br>
-        <div class="sig-grid">
-          <div class="sig-col">
-            <h4 class="sig-h4">Conheça meus outros projetos</h4>
-
-            <a class="sig-link" href="https://nicholemos.github.io/STR" target="_blank" rel="noopener noreferrer">
-              <div class="sig-link-main">
-                <span class="sig-link-name">STR – Supremo Tribunal Regreiro</span>
-                <span class="sig-link-url">nicholemos.github.io/STR</span>
-              </div>
-              <span class="sig-ext" aria-hidden="true">↗</span>
-            </a>
-
-            <a class="sig-link" href="https://nicholemos.github.io/ficha/" target="_blank" rel="noopener noreferrer">
-              <div class="sig-link-main">
-                <span class="sig-link-name">Ficha Automática de Tormenta20</span>
-                <span class="sig-link-url">nicholemos.github.io/ficha</span>
-              </div>
-              <span class="sig-ext" aria-hidden="true">↗</span>
-            </a>
-
-            <a class="sig-link" href="https://nicholemos.github.io/itens/" target="_blank" rel="noopener noreferrer">
-              <div class="sig-link-main">
-                <span class="sig-link-name">Compilado de Itens</span>
-                <span class="sig-link-url">nicholemos.github.io/itens</span>
-              </div>
-              <span class="sig-ext" aria-hidden="true">↗</span>
-            </a>
-
-            <a class="sig-link" href="https://nicholemos.github.io/poderes/" target="_blank" rel="noopener noreferrer">
-              <div class="sig-link-main">
-                <span class="sig-link-name">Compilado de Poderes</span>
-                <span class="sig-link-url">nicholemos.github.io/poderes</span>
-              </div>
-              <span class="sig-ext" aria-hidden="true">↗</span>
-            </a>
-
-            <a class="sig-link" href="https://nicholemos.github.io/CalculadoradeAtributos/" target="_blank"
-              rel="noopener noreferrer">
-              <div class="sig-link-main">
-                <span class="sig-link-name">Calculadora de Atributos</span>
-                <span class="sig-link-url">nicholemos.github.io/CalculadoradeAtributos</span>
-              </div>
-              <span class="sig-ext" aria-hidden="true">↗</span>
-            </a>
-
-            <a class="sig-link" href="https://nicholemos.github.io/EncontrosAleatorios/" target="_blank"
-              rel="noopener noreferrer">
-              <div class="sig-link-main">
-                <span class="sig-link-name">Encontros Aleatórios</span>
-                <span class="sig-link-url">nicholemos.github.io/EncontrosAleatorios</span>
-              </div>
-              <span class="sig-ext" aria-hidden="true">↗</span>
-            </a>
-
-            <a class="sig-link" href="https://nicholemos.github.io/calculadoraND_Tormenta/" target="_blank"
-              rel="noopener noreferrer">
-              <div class="sig-link-main">
-                <span class="sig-link-name">Calculadora de ND</span>
-                <span class="sig-link-url">nicholemos.github.io/calculadoraND_Tormenta</span>
-              </div>
-              <span class="sig-ext" aria-hidden="true">↗</span>
-            </a>
-          </div>
-
-          <div class="sig-col">
-            <h4 class="sig-h4">Este projeto</h4>
-
-            <a class="sig-link sig-link-primary" href="https://nicholemos.github.io/combate/" target="_blank"
-              rel="noopener noreferrer">
-              <div class="sig-link-main">
-                <span class="sig-link-name">Gerenciador de Combate – Tormenta20</span>
-                <span class="sig-link-url">nicholemos.github.io/combate</span>
-              </div>
-              <span class="sig-ext" aria-hidden="true">↗</span>
-            </a>
-
-            <div class="sig-note">
-              <div class="sig-note-title">Dica rápida</div>
-              <div class="sig-note-text">
-                Os links abrem em nova aba. Durante a semana vamos polir cada ferramenta aos poucos.
-              </div>
-            </div>
-          </div>
-
-
-        </div>
-
-        <div class="sig-footer">
-          <span class="sig-footer-text">Feito para mesa rápida. Feedbacks são bem-vindos.</span>
-        </div>
-      </div>
-    </details>
-  </section>
-
 
   <script src="script.js"></script>
 </body>
-
 </html>
