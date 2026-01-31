@@ -1,0 +1,374 @@
+/* ============================
+   Gerenciador de Combate T20
+   (standalone)
+   ============================ */
+
+@font-face {
+  font-family: "Tormenta";
+  src: url("Tormenta.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+:root{
+  /* Paleta inspirada no seu layout do STR */
+  --str-slate: #2f3f4f;
+  --str-slate-2: #344a5c;
+  --str-accent: #d94b3d;
+
+  --t20-red: #c01818;
+  --t20-ink: #111;
+  --t20-border: #111;
+  --t20-soft: #f5f5f5;
+  --t20-soft2:#fafafa;
+
+  --hp-bar: #c01818;
+  --mp-bar: #1b6cff;
+}
+
+body{
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background: #f2f4f7;
+}
+
+/* Header STR */
+.str-header{
+  background: var(--str-slate);
+  color: #fff;
+  padding: 42px 16px 34px;
+}
+
+.str-header-inner{
+  max-width: 1040px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.str-title{
+  font-family: "Tormenta", system-ui, sans-serif;
+  letter-spacing: 1px;
+  font-size: 3rem;
+  line-height: 1.1;
+}
+
+.str-subtitle{
+  margin-top: 6px;
+  font-size: 1.25rem;
+  opacity: .9;
+}
+
+.str-accent{
+  height: 6px;
+  background: var(--str-accent);
+}
+
+.topbar{
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(0,0,0,.08);
+}
+
+.pill{
+  background: #111;
+  color: #fff;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-weight: 800;
+  font-size: .85rem;
+}
+
+.app-shell{
+  border: 2px solid var(--t20-border);
+  margin-top: -28px;
+}
+
+.app-title{
+  font-family: "Tormenta", system-ui, sans-serif;
+  letter-spacing: 1px;
+  font-size: 1.25rem;
+  color: var(--t20-red);
+}
+
+.t20-label{
+  font-family: "Tormenta", system-ui, sans-serif;
+  letter-spacing: .6px;
+  font-size: .85rem;
+  color: var(--t20-red);
+  margin-bottom: 2px;
+}
+
+.t20-input{
+  border: 2px solid var(--t20-border) !important;
+  border-radius: .5rem !important;
+  background: #f4fbff;
+}
+
+.btn-add{
+  border-radius: .75rem;
+}
+
+.combat-table-header{
+  border-top: 2px solid var(--t20-border);
+  border-bottom: 2px solid var(--t20-border);
+  background: var(--t20-soft2);
+}
+
+.combat-list{
+  display: flex;
+  flex-direction: column;
+  gap: .6rem;
+}
+
+/* Row */
+.combat-row{
+  border: 2px solid var(--t20-border);
+  border-radius: .9rem;
+  overflow: hidden;
+  background: #fff;
+}
+
+.combat-row.active-turn{
+  background: #ffeaea;
+  border-color: #e3b4b4;
+  box-shadow: 0 0 0 2px #f2cccc inset;
+}
+
+.combat-summary{
+  padding: .55rem .5rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.drag-handle{
+  cursor: grab;
+  color: #777;
+}
+
+.combat-init-input{
+  width: 74px;
+  max-width: 100%;
+  border: 2px solid var(--t20-border);
+  border-radius: .6rem;
+  background: #eef8ff;
+  font-weight: 800;
+  text-align: center;
+  padding: .15rem .35rem;
+}
+
+.combat-badges{
+  display: flex;
+  gap: .35rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* PV/PM mini com barra */
+.bar-mini{
+  width: 118px;
+  max-width: 100%;
+  border: 2px solid #111;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  position: relative;
+  height: 24px;
+}
+
+.bar-mini .fill{
+  height: 100%;
+  width: 0;
+}
+
+.bar-mini.hp .fill{ background: var(--hp-bar); }
+.bar-mini.mp .fill{ background: var(--mp-bar); }
+
+.bar-mini .txt{
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: .8rem;
+  color: #111;
+  text-shadow: 0 1px 0 rgba(255,255,255,.65);
+}
+
+/* Nome em estados (PV baixo / PV negativo) */
+.combat-name{
+  font-weight: 900;
+}
+
+.combat-name.hp-low{
+  color: #c34141; /* vermelho claro */
+}
+
+.combat-name.hp-dead{
+  color: #b30000; /* vermelho destacado */
+  text-shadow: 0 0 0 rgba(0,0,0,0);
+}
+
+/* PV/PM com barrinha */
+.meter{
+  width: 120px;
+  max-width: 100%;
+  border: 2px solid #222;
+  border-radius: 999px;
+  background: #fff;
+  overflow: hidden;
+  position: relative;
+  height: 22px;
+}
+
+.meter .fill{
+  height: 100%;
+  width: 0;
+}
+
+.meter.hp .fill{ background: var(--hp-bar); }
+.meter.mp .fill{ background: var(--mp-bar); }
+
+.meter .txt{
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: .82rem;
+  color: #111;
+  text-shadow: 0 1px 0 rgba(255,255,255,.6);
+}
+
+.meter.over .txt::before{
+  content: "+";
+  margin-right: 2px;
+}
+
+/* Nome em estado crítico */
+.name-critical{
+  color: #d85c5c;
+}
+
+.name-dead{
+  color: #b10000;
+  font-weight: 900;
+}
+
+.combat-note-indicator{
+  display: inline-block;
+  margin-left: .35rem;
+  opacity: 0;
+  transform: translateY(1px);
+  font-size: .95rem;
+}
+
+.combat-note-indicator.has-notes{
+  opacity: 1;
+}
+
+.combat-details{
+  border-top: 2px dashed #c8c8c8;
+  background: #fff0f0;
+  padding: .75rem;
+}
+
+.combat-quick-btn{
+  padding: .1rem .45rem !important;
+  border-radius: .5rem !important;
+}
+
+.combat-subbox{
+  border: 2px solid #222;
+  border-radius: .9rem;
+  background: var(--t20-soft);
+  padding: .6rem;
+}
+
+.chip-row{
+  display:flex;
+  flex-wrap: wrap;
+  gap: .35rem;
+  align-items: center;
+}
+
+.cond-chip{
+  display:inline-flex;
+  align-items:center;
+  gap:.35rem;
+  border: 2px solid #222;
+  border-radius: 999px;
+  padding: .15rem .5rem;
+  background:#fff;
+  font-weight:700;
+  font-size:.85rem;
+}
+
+.cond-chip .n{
+  font-weight:900;
+  color: var(--t20-red);
+}
+
+.cond-chip button{
+  border: 0;
+  background: transparent;
+  padding: 0 .2rem;
+  line-height: 1;
+}
+
+.cond-chip button:hover{
+  color: var(--t20-red);
+}
+
+.inline-mini{
+  width: 92px;
+}
+
+.small-help{
+  font-size: .85rem;
+  color:#555;
+}
+
+.combat-log{
+  max-height: 240px;
+  overflow: auto;
+  background: #fff;
+  border: 2px solid #222;
+  border-radius: .75rem;
+  padding: .5rem .65rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: .85rem;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 576px){
+  .combat-init-input{ width: 64px; }
+}
+
+
+/* Ajuda de condição (texto abaixo do seletor) */
+.cond-help{min-height:1.2em;}
+
+/* Popover de condição (botão i) */
+.cond-popover{
+  position: relative;
+  margin-top: .5rem;
+}
+.cond-popover-inner{
+  border: 2px solid #222;
+  border-radius: .75rem;
+  background: #fff;
+  padding: .5rem .6rem;
+  box-shadow: 0 6px 18px rgba(0,0,0,.12);
+}
+.cond-popover-title{
+  font-weight: 900;
+  color: var(--t20-red);
+  margin-bottom: .25rem;
+}
+.cond-popover-body{
+  font-size: .92rem;
+  line-height: 1.25rem;
+  color: #222;
+}

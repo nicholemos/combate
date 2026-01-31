@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gerenciador de Combate T20</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <header class="str-header">
+    <div class="str-header-inner">
+      <div class="str-title">Gerenciador de Combate</div>
+      <div class="str-subtitle">Tormenta 20</div>
+    </div>
+  </header>
+  <div class="str-accent"></div>
+
+  <main class="container app-shell bg-white p-3 p-md-4 rounded shadow-lg">
+
+    <div class="topbar d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+      <div class="d-flex align-items-center gap-2 flex-wrap">
+        <span class="pill">Rodada</span>
+        <span id="combatRoundMini" class="fw-bold text-danger fs-5">1</span>
+        <span class="text-muted small">|</span>
+        <span class="pill">Vez</span>
+        <span id="combatActiveMini" class="fw-bold">—</span>
+      </div>
+
+      <div class="d-flex flex-wrap align-items-center gap-2">
+        <button class="btn btn-dark btn-sm fw-bold" onclick="combatPrevTurn()" title="Turno anterior (não desfaz duração de condições)">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        <button class="btn btn-dark btn-sm fw-bold" onclick="combatNextTurn()" title="Próximo turno (reduz condições ao sair do turno atual)">
+          <i class="bi bi-chevron-right"></i>
+        </button>
+
+        <button class="btn btn-outline-dark btn-sm" onclick="combatSort()" title="Ordenar por iniciativa (desc)">
+          <i class="bi bi-sort-numeric-down"></i> Ordenar
+        </button>
+
+        <div class="form-check form-switch ms-1 me-1">
+          <input class="form-check-input" type="checkbox" role="switch" id="combatAutoSort" onchange="combatSetAutoSort(this.checked)">
+          <label class="form-check-label small" for="combatAutoSort">Auto-ordenar</label>
+        </div>
+
+        <button class="btn btn-outline-secondary btn-sm" onclick="combatExport()" title="Baixar combate (.json)">
+          <i class="bi bi-download"></i>
+        </button>
+        <button class="btn btn-outline-secondary btn-sm" onclick="document.getElementById('combatFileInput').click()" title="Carregar combate (.json)">
+          <i class="bi bi-upload"></i>
+        </button>
+        <input type="file" id="combatFileInput" style="display:none" accept=".json" onchange="combatImport(this)">
+
+        <button class="btn btn-outline-secondary btn-sm" onclick="combatResetRound()" title="Resetar rodada para 1">
+          <i class="bi bi-arrow-counterclockwise"></i>
+        </button>
+        <button class="btn btn-outline-danger btn-sm fw-bold" onclick="combatNew()" title="Novo combate (limpa tudo)">
+          <i class="bi bi-trash-fill"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="border border-2 border-dark rounded p-3 bg-white mb-3">
+      <div class="row g-2 align-items-end">
+        <div class="col-12 col-md-2">
+          <label class="t20-label">Iniciativa</label>
+          <input id="combatNewInit" type="number" inputmode="numeric" class="form-control t20-input text-center fw-bold" placeholder="0">
+        </div>
+
+        <div class="col-12 col-md-4">
+          <label class="t20-label">Nome</label>
+          <input id="combatNewName" type="text" class="form-control t20-input fw-bold" placeholder="Ex: Goblin 1">
+        </div>
+
+        <div class="col-6 col-md-2">
+          <label class="t20-label">PV (atual)</label>
+          <input id="combatNewHP" type="number" inputmode="numeric" class="form-control t20-input text-center" placeholder="0">
+        </div>
+
+        <div class="col-6 col-md-2">
+          <label class="t20-label">PV (máx)</label>
+          <input id="combatNewHPMax" type="number" inputmode="numeric" class="form-control t20-input text-center" placeholder="(igual ao atual)">
+        </div>
+
+        <div class="col-6 col-md-1">
+          <label class="t20-label">PM</label>
+          <input id="combatNewMP" type="number" inputmode="numeric" class="form-control t20-input text-center" placeholder="0">
+        </div>
+
+        <div class="col-6 col-md-1">
+          <label class="t20-label">PM máx</label>
+          <input id="combatNewMPMax" type="number" inputmode="numeric" class="form-control t20-input text-center" placeholder="(igual ao atual)">
+        </div>
+
+        <div class="col-12 col-md-12 mt-2 d-flex gap-2 justify-content-between align-items-center flex-wrap">
+          <div class="text-muted small">
+            Dicas: clique para expandir. Arraste pelo grip para desempate manual. 📝 aparece quando houver anotações. Condições com duração caem ao avançar o turno.
+          </div>
+          <button class="btn btn-dark fw-bold btn-add" onclick="combatAddFromForm()" title="Adicionar">
+            <i class="bi bi-plus-lg"></i> Adicionar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="combat-table-header px-2 py-1 mb-2">
+      <div class="row g-1 text-center fw-bold">
+        <div class="col-3 col-md-2">INI</div>
+        <div class="col-6 col-md-6 text-start">NOME</div>
+        <div class="col-3 col-md-4">PV/PM</div>
+      </div>
+    </div>
+
+    <div id="combatList" class="combat-list"></div>
+
+    <div class="border border-2 border-dark rounded p-2 bg-light mt-3">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-2">
+          <button class="btn btn-outline-dark btn-sm" onclick="combatToggleLog()" title="Mostrar/ocultar log">
+            <i class="bi bi-journal-text"></i> Log
+          </button>
+          <button class="btn btn-outline-secondary btn-sm" onclick="combatClearLog()" title="Limpar log">
+            <i class="bi bi-eraser"></i>
+          </button>
+        </div>
+        <div class="text-muted small">O log é opcional, mas ajuda muito quando alguém diz “pera, como ele ficou com 2 PV?”</div>
+      </div>
+
+      <div id="combatLogWrap" class="mt-2 d-none">
+        <div id="combatLog" class="combat-log"></div>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
