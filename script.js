@@ -824,8 +824,8 @@ function combatRowHTML(c) {
 
   return `
   <div class="combat-row" id="combatRow-${c.id}" data-id="${c.id}">
-    <div class="row g-1 align-items-center text-center combat-summary position-relative" onclick="combatRowClick('${c.id}', event)">
-      <div class="col-3 col-md-2 d-flex align-items-center justify-content-center gap-2">
+    <div class="combat-summary position-relative" onclick="combatRowClick('${c.id}', event)">
+      <div class="cs-ini">
         <i class="bi bi-grip-vertical drag-handle" title="Arrastar"></i>
         <input class="combat-init-input" type="number" inputmode="numeric" value="${init}"
           title="Editar iniciativa"
@@ -833,13 +833,12 @@ function combatRowHTML(c) {
           oninput="combatUpdateInit('${c.id}', this.value)">
       </div>
 
-      <div class="col-6 col-md-6 text-start">
+      <div class="cs-name text-start">
         <span id="combatName-${c.id}" class="combat-name ${nameStateClass}">${escapeHtml(c.name || "—")}</span>
         <span id="combatNoteIndicator-${c.id}" class="combat-note-indicator ${noteClass}" title="Anotações">📝</span>
       </div>
 
-
-      <div class="col-3 col-md-4 d-flex align-items-center justify-content-end gap-2">
+      <div class="cs-right" onclick="event.stopPropagation()">
         <div class="combat-badges">
           <div class="bar-mini hp" title="PV atual/ máximo">
             <div id="combatHPFill-${c.id}" class="fill" style="width:${hpPct}%"></div>
