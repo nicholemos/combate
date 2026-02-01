@@ -127,9 +127,10 @@ body{
 }
 
 .combat-row.active-turn{
-  background: #ffeaea;
-  border-color: #e3b4b4;
-  box-shadow: 0 0 0 2px #f2cccc inset;
+  /* seleção/vez atual: tom azul (mais neutro no STR) */
+  background: #eaf4ff;
+  border-color: #b4cce3;
+  box-shadow: 0 0 0 2px #cfe4f7 inset;
 }
 
 .combat-summary{
@@ -450,4 +451,43 @@ body{
 }
 .combat-row.open .combat-chev{
   color: rgba(0,0,0,.75);
+}
+
+/* =========================
+   Mobile: legibilidade do nome e ações
+   - Nome vai para baixo da iniciativa
+   - Ações (copiar/apagar) sempre visíveis (sem hover)
+   ========================= */
+@media (max-width: 576px){
+  /* Reordena os 3 blocos da linha: INI | PV/PM -> Nome embaixo */
+  .combat-summary > div:nth-child(1){
+    order: 1;
+  }
+  .combat-summary > div:nth-child(3){
+    order: 2;
+  }
+  .combat-summary > div:nth-child(2){
+    order: 3;
+    flex: 0 0 100%;
+    max-width: 100%;
+    text-align: left;
+    padding-left: 52px; /* alinha sob o bloco do INI (grip+input) */
+    padding-top: 4px;
+  }
+
+  .combat-name{
+    display: block;
+    font-size: 1.05rem;
+    line-height: 1.1;
+  }
+
+  .combat-badges{
+    justify-content: flex-end;
+  }
+
+  /* Em mobile não existe hover confiável: mostre ações sempre */
+  .combat-actions-inline{
+    opacity: 1;
+    pointer-events: auto;
+  }
 }
