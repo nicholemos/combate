@@ -137,7 +137,17 @@ body{
   padding: .55rem .5rem;
   cursor: pointer;
   user-select: none;
+
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas: "ini name right";
+  gap: .5rem;
+  align-items: center;
 }
+.cs-ini{ grid-area: ini; display:flex; align-items:center; justify-content:center; gap:.5rem; }
+.cs-name{ grid-area: name; min-width:0; }
+.cs-right{ grid-area: right; display:flex; align-items:center; justify-content:flex-end; gap:.45rem; }
+
 
 /* Ações (copiar/expandir/remover) ficam escondidas no recolhido */
 .combat-actions-inline{
@@ -453,39 +463,41 @@ body{
   color: rgba(0,0,0,.75);
 }
 
+
+
 /* =========================
-   Mobile: legibilidade do nome e ações
-   - Nome vai para baixo da iniciativa
-   - Ações (copiar/apagar) sempre visíveis (sem hover)
+   Mobile: linha de combate compacta e legível
+   - topo: INI à esquerda, PV/PM + ações à direita
+   - nome em linha separada (não fica embaixo das barrinhas)
+   - ações sempre visíveis (sem hover)
    ========================= */
 @media (max-width: 576px){
-  /* Reordena os 3 blocos da linha: INI | PV/PM -> Nome embaixo */
-  .combat-summary > div:nth-child(1){
-    order: 1;
-  }
-  .combat-summary > div:nth-child(3){
-    order: 2;
-  }
-  .combat-summary > div:nth-child(2){
-    order: 3;
-    flex: 0 0 100%;
-    max-width: 100%;
-    text-align: left;
-    padding-left: 52px; /* alinha sob o bloco do INI (grip+input) */
-    padding-top: 4px;
+  .combat-summary{
+    grid-template-columns: auto 1fr;
+    grid-template-areas:
+      "ini right"
+      "name name";
+    gap: .35rem .5rem;
   }
 
-  .combat-name{
-    display: block;
-    font-size: 1.05rem;
-    line-height: 1.1;
+  .cs-name{
+    padding-left: 44px; /* alinha abaixo do grip+ini */
+    padding-bottom: 2px;
+  }
+
+  .cs-right{
+    flex-direction: column;
+    align-items: flex-end;
+    gap: .35rem;
   }
 
   .combat-badges{
     justify-content: flex-end;
   }
 
-  /* Em mobile não existe hover confiável: mostre ações sempre */
+  .bar-mini{ width: 110px; height: 22px; }
+  .bar-mini .txt{ font-size: 12px; }
+
   .combat-actions-inline{
     opacity: 1;
     pointer-events: auto;
